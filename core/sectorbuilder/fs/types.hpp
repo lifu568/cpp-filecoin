@@ -19,13 +19,13 @@ namespace fc::sectorbuilder {
 
   struct PathInfo {
     bool is_cached;
-    int weight;
+    int64_t weight;
   };
 
   struct PathConfig {
-      std::string path;
-      bool is_cached;
-      int weight;
+    std::string path;
+    bool is_cached;
+    int weight;
   };
 
   enum class DataType {
@@ -35,9 +35,14 @@ namespace fc::sectorbuilder {
     DATA_UNSEALED,
   };
 
-  DataType fromString(const std::string &type);
-  std::string toString(DataType type);
-  uint64_t overheadMul(DataType type);
+  enum class DataTypeErrors {
+    INVALID_DATA_TYPE = 1,
+    UNSUPPORTED_DATA_TYPE,
+  };
+
+  outcome::result<DataType> fromString(const std::string &type);
+  outcome::result<std::string> toString(DataType type);
+  outcome::result<uint64_t> overheadMul(DataType type);
 
   class SectorPath;
 
@@ -46,8 +51,9 @@ namespace fc::sectorbuilder {
   class StoragePath : public std::string {
    public:
     StoragePath(const std::string &path);
+    StoragePath() = default;
 
-    SectorPath sector(const DataType &type,
+    outcome::result<SectorPath> sector(const DataType &type,
                       const Address &miner,
                       SectorNumber num) const;
   };
@@ -55,10 +61,11 @@ namespace fc::sectorbuilder {
   class SectorPath : public std::string {
    public:
     SectorPath(const std::string &str);
+    SectorPath() = default;
 
     StoragePath storage() const;
 
-    DataType type() const;
+    outcome::result<DataType> type() const;
 
     outcome::result<SectorNumber> num() const;
 
@@ -72,6 +79,7 @@ namespace fc::sectorbuilder {
 
 }  // namespace fc::sectorbuilder
 
+OUTCOME_HPP_DECLARE_ERROR(fc::sectorbuilder, DataTypeErrors);
 OUTCOME_HPP_DECLARE_ERROR(fc::sectorbuilder, SectorPathErrors);
 
 #endif  // CPP_FILECOIN_CORE_SECTORBUILDER_TYPES_HPP

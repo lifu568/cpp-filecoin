@@ -13,24 +13,41 @@
 namespace fc::sectorbuilder {
   class FSImpl : public FS {
 
-      outcome::result<SectorPath> findSector(DataType type, const Address &miner, SectorNumber num) override;
+      FSImpl();
 
-      outcome::result<StoragePath> findBestPath(uint64_t qty_bytes_needed, bool is_cached, bool strict) override;
+    outcome::result<SectorPath> findSector(DataType type,
+                                           const Address &miner,
+                                           SectorNumber num) override;
 
-      outcome::result<SectorPath>
-      forceAllocSector(DataType type, const Address &miner, SectorSize ssize, bool is_cached,
-                       SectorNumber num) override;
+    outcome::result<StoragePath> findBestPath(uint64_t qty_bytes_needed,
+                                              bool need_cached,
+                                              bool strict) override;
 
-      outcome::result<SectorPath>
-      allocSector(DataType type, const Address &miner, SectorSize ssize, bool is_cached, SectorNumber num) override;
+    outcome::result<SectorPath> forceAllocSector(DataType type,
+                                                 const Address &miner,
+                                                 SectorSize ssize,
+                                                 bool need_cached,
+                                                 SectorNumber num) override;
 
-      outcome::result<SectorPath> prepareCacheMove(const SectorPath &sector, SectorSize ssize, bool to_cache) override;
+    outcome::result<SectorPath> allocSector(DataType type,
+                                            const Address &miner,
+                                            SectorSize ssize,
+                                            bool need_cached,
+                                            SectorNumber num) override;
 
-      outcome::result<void> moveSector(const SectorPath &from, const SectorPath &to) override;
+    outcome::result<SectorPath> prepareCacheMove(const SectorPath &sector,
+                                                 SectorSize ssize,
+                                                 bool need_cached) override;
 
-  private:
+    outcome::result<void> moveSector(const SectorPath &from,
+                                     const SectorPath &to) override;
+
+   private:
+
+
     std::unordered_map<std::string, std::shared_ptr<PathInfo>> paths;
-    std::unordered_map<std::string, std::unordered_map<DataType, uint64_t>> reserved;
+    std::unordered_map<std::string, std::unordered_map<DataType, uint64_t>>
+        reserved;
 
     // TODO locks with channels
 

@@ -9,7 +9,7 @@
 
 namespace fc::sectorbuilder {
 
-  DataType fromString(const std::string &type) {
+  outcome::result<DataType> fromString(const std::string &type) {
     if (type == "cache") {
       return DataType::DATA_CACHE;
     }
@@ -23,10 +23,10 @@ namespace fc::sectorbuilder {
       return DataType::DATA_UNSEALED;
     }
 
-    return static_cast<DataType>(0);
+    return DataTypeErrors::UNSUPPORTED_DATA_TYPE;
   }
 
-  std::string toString(DataType type) {
+  outcome::result<std::string> toString(DataType type) {
     switch (type) {
       case DataType::DATA_CACHE:
         return "cache";
@@ -38,10 +38,10 @@ namespace fc::sectorbuilder {
         return "unsealed";
     }
 
-    return "unkown";
+    return DataTypeErrors::INVALID_DATA_TYPE;
   }
 
-  uint64_t overheadMul(DataType type) {
+  outcome::result<uint64_t> overheadMul(DataType type) {
     switch (type) {
       case DataType::DATA_CACHE:
         return 11;
@@ -51,7 +51,7 @@ namespace fc::sectorbuilder {
         return 1;
     }
 
-    return 1000;
+    return DataTypeErrors::INVALID_DATA_TYPE;
   }
 
   std::string sectorName(const Address &miner, SectorNumber sector_num) {
@@ -62,11 +62,13 @@ namespace fc::sectorbuilder {
   StoragePath::StoragePath(const std::string &str)
       : std::string(boost::filesystem::path(str).string()) {}
 
-  SectorPath StoragePath::sector(const DataType &type,
-                                 const Address &miner,
-                                 SectorNumber num) const {
+  outcome::result<SectorPath> StoragePath::sector(const DataType &type,
+                                                  const Address &miner,
+                                                  SectorNumber num) const {
+    OUTCOME_TRY(type_str, toString(type));
+
     return SectorPath(boost::filesystem::path(*this)
-                          .append(toString(type))
+                          .append(type_str)
                           .append(sectorName(miner, num))
                           .string());
   }
@@ -80,7 +82,7 @@ namespace fc::sectorbuilder {
     return StoragePath(current_dir.parent_path().string());
   }
 
-  DataType SectorPath::type() const {
+  outcome::result<DataType> SectorPath::type() const {
     boost::filesystem::path path(*this);
     auto current_dir = path.remove_filename();
     return fromString(current_dir.leaf().string());
@@ -118,6 +120,18 @@ namespace fc::sectorbuilder {
   }
 
 }  // namespace fc::sectorbuilder
+
+OUTCOME_CPP_DEFINE_CATEGORY(fc::sectorbuilder, DataTypeErrors, e) {
+  using fc::sectorbuilder::DataTypeErrors;
+  switch (e) {
+    case (DataTypeErrors::INVALID_DATA_TYPE):
+      return "Data type: invalid DataType";
+    case (DataTypeErrors::UNSUPPORTED_DATA_TYPE):
+      return "Sector path: string representation does not match any DataType";
+    default:
+      return "Sector path: unknown error";
+  }
+}
 
 OUTCOME_CPP_DEFINE_CATEGORY(fc::sectorbuilder, SectorPathErrors, e) {
   using fc::sectorbuilder::SectorPathErrors;

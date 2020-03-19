@@ -23,10 +23,9 @@ using fc::sectorbuilder::SectorPath;
 using fc::sectorbuilder::SectorPathErrors;
 
 TEST_F(FSTypesTest, SectorPath_SectorFunction) {
-  Path sector_dir_path =
-      fs::canonical(base_path)
-          .append(fc::sectorbuilder::toString(DataType::DATA_CACHE))
-          .string();
+  EXPECT_OUTCOME_TRUE(type_str,
+                      fc::sectorbuilder::toString(DataType::DATA_CACHE))
+  Path sector_dir_path = fs::canonical(base_path).append(type_str).string();
   boost::filesystem::create_directory(sector_dir_path);
   Path sector_file_path =
       boost::filesystem::unique_path(
@@ -39,8 +38,9 @@ TEST_F(FSTypesTest, SectorPath_SectorFunction) {
 }
 
 TEST_F(FSTypesTest, SectorPath_TypeFunction) {
-  auto sector_dir_path = fs::canonical(base_path).append(
-      fc::sectorbuilder::toString(DataType::DATA_SEALED));
+  EXPECT_OUTCOME_TRUE(type_str,
+                      fc::sectorbuilder::toString(DataType::DATA_SEALED))
+  Path sector_dir_path = fs::canonical(base_path).append(type_str).string();
   boost::filesystem::create_directory(sector_dir_path);
   Path sector_file_path =
       boost::filesystem::unique_path(
@@ -49,13 +49,13 @@ TEST_F(FSTypesTest, SectorPath_TypeFunction) {
   boost::filesystem::ofstream(sector_file_path).close();
 
   auto path = SectorPath(sector_file_path);
-  ASSERT_EQ(path.type(), DataType::DATA_SEALED);
+  EXPECT_OUTCOME_EQ(path.type(), DataType::DATA_SEALED);
 }
 
 TEST_F(FSTypesTest, SectorPath_NumFunction_Success) {
-  auto sector_dir_path =
-      boost::filesystem::unique_path(fs::canonical(base_path).append(
-          fc::sectorbuilder::toString(DataType::DATA_UNSEALED)));
+  EXPECT_OUTCOME_TRUE(type_str,
+                      fc::sectorbuilder::toString(DataType::DATA_UNSEALED))
+  Path sector_dir_path = fs::canonical(base_path).append(type_str).string();
   boost::filesystem::create_directory(sector_dir_path);
   Path sector_file_path =
       boost::filesystem::unique_path(
@@ -68,8 +68,9 @@ TEST_F(FSTypesTest, SectorPath_NumFunction_Success) {
 }
 
 TEST_F(FSTypesTest, SectorPath_NumFunction_InvalidName) {
-  auto sector_dir_path = fs::canonical(base_path).append(
-      fc::sectorbuilder::toString(DataType::DATA_STAGING));
+  EXPECT_OUTCOME_TRUE(type_str,
+                      fc::sectorbuilder::toString(DataType::DATA_STAGING))
+  Path sector_dir_path = fs::canonical(base_path).append(type_str).string();
   boost::filesystem::create_directory(sector_dir_path);
   Path sector_file_path = boost::filesystem::unique_path(
                               fs::canonical(sector_dir_path).append("%%%%%"))
@@ -81,8 +82,9 @@ TEST_F(FSTypesTest, SectorPath_NumFunction_InvalidName) {
 }
 
 TEST_F(FSTypesTest, SectorPath_NumFunction_InvalidSectorNum) {
-  auto sector_dir_path = fs::canonical(base_path).append(
-      fc::sectorbuilder::toString(DataType::DATA_STAGING));
+  EXPECT_OUTCOME_TRUE(type_str,
+                      fc::sectorbuilder::toString(DataType::DATA_STAGING))
+  Path sector_dir_path = fs::canonical(base_path).append(type_str).string();
   boost::filesystem::create_directory(sector_dir_path);
   Path sector_file_path =
       boost::filesystem::unique_path(
@@ -104,8 +106,9 @@ TEST_F(FSTypesTest, SectorPath_NumFunction_InvalidSectorNum) {
 }
 
 TEST_F(FSTypesTest, SectorPath_MinerFunction_Success) {
-  auto sector_dir_path = fs::canonical(base_path).append(
-      fc::sectorbuilder::toString(DataType::DATA_STAGING));
+  EXPECT_OUTCOME_TRUE(type_str,
+                      fc::sectorbuilder::toString(DataType::DATA_STAGING))
+  Path sector_dir_path = fs::canonical(base_path).append(type_str).string();
   boost::filesystem::create_directory(sector_dir_path);
   Path sector_file_path =
       boost::filesystem::unique_path(
@@ -120,8 +123,9 @@ TEST_F(FSTypesTest, SectorPath_MinerFunction_Success) {
 }
 
 TEST_F(FSTypesTest, SectorPath_MinerFunction_InvalidName) {
-  auto sector_dir_path = fs::canonical(base_path).append(
-      fc::sectorbuilder::toString(DataType::DATA_STAGING));
+  EXPECT_OUTCOME_TRUE(type_str,
+                      fc::sectorbuilder::toString(DataType::DATA_STAGING))
+  Path sector_dir_path = fs::canonical(base_path).append(type_str).string();
   boost::filesystem::create_directory(sector_dir_path);
   Path sector_file_path =
       boost::filesystem::unique_path(
@@ -134,8 +138,9 @@ TEST_F(FSTypesTest, SectorPath_MinerFunction_InvalidName) {
 }
 
 TEST_F(FSTypesTest, sectorName) {
-  auto sector_dir_path =
-      fs::canonical(base_path).append(toString(DataType::DATA_CACHE));
+  EXPECT_OUTCOME_TRUE(type_str,
+                      fc::sectorbuilder::toString(DataType::DATA_CACHE))
+  Path sector_dir_path = fs::canonical(base_path).append(type_str).string();
   boost::filesystem::create_directory(sector_dir_path);
   Path sector_file_path =
       fs::canonical(sector_dir_path).append("s-t0999-84").string();
@@ -148,8 +153,9 @@ TEST_F(FSTypesTest, sectorName) {
 }
 
 TEST_F(FSTypesTest, StoragePath_SectorFunction) {
-  auto sector_dir_path =
-      fs::canonical(base_path).append(toString(DataType::DATA_CACHE));
+  EXPECT_OUTCOME_TRUE(type_str,
+                      fc::sectorbuilder::toString(DataType::DATA_CACHE))
+  Path sector_dir_path = fs::canonical(base_path).append(type_str).string();
   boost::filesystem::create_directory(sector_dir_path);
   Path sector_file_path =
       fs::canonical(sector_dir_path).append("s-t0999-84").string();
@@ -158,6 +164,7 @@ TEST_F(FSTypesTest, StoragePath_SectorFunction) {
   auto result_path = SectorPath(sector_file_path);
   EXPECT_OUTCOME_TRUE(miner, result_path.miner())
   EXPECT_OUTCOME_TRUE(num, result_path.num())
-  ASSERT_EQ(result_path.storage().sector(DataType::DATA_CACHE, miner, num),
-            result_path);
+  EXPECT_OUTCOME_EQ(
+      result_path.storage().sector(DataType::DATA_CACHE, miner, num),
+      result_path);
 }
