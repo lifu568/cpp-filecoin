@@ -41,47 +41,44 @@ namespace fc::markets::retrieval::provider {
    * @enum Provider events
    */
   enum class ProviderEvent : uint64_t {
-    /* Received new deal from a client */
-    ProviderEventOpen,
+    /* Handle new deal proposal from a client */
+    EvHandleProposal,
 
-    /* Send deal response network error */
-    ProviderEventWriteResponseFailed,
+    /* Accept client's deal proposal */
+    EvAcceptDeal,
 
-    /* Network error while reading payment voucher from a client */
-    ProviderEventReadPaymentFailed,
+    /* Reject client's deal proposal */
+    EvRejectDeal,
 
-    /* Failed to look up requested piece size */
-    ProviderEventGetPieceSizeErrored,
+    /* Internal error */
+    EvInternalError,
 
-    /* Provider cannot find piece for proposed deal */
-    ProviderEventDealNotFound,
+    /* Send data/response to a client network error */
+    EvNetworkError,
 
-    /* Provider rejected client's deal proposal */
-    ProviderEventDealRejected,
+    /* Error reading next block of the requested Piece from a blockstore */
+    EvReadBlockError,
 
-    /* Provider accepted client's deal proposal */
-    ProviderEventDealAccepted,
+    /* Request next payment from a client */
+    EvRequestPayment,
 
-    /* Failed to read next block from a piece */
-    ProviderEventBlockErrored,
+    /* Handle client payment */
+    EvHandleClientPayment,
 
-    /* Provider reads last block from a piece */
-    ProviderEventBlocksCompleted,
+    /* Continue sending blocks to a client after received payment */
+    EvContinueDeal,
 
-    /* Provider asks for payment from a client */
-    ProviderEventPaymentRequested,
+    /* Reading client's payment error */
+    EvReadPaymentError,
 
-    /* Failed to save a payment voucher */
-    ProviderEventSaveVoucherFailed,
+    /* Saving payment voucher error */
+    EvSaveVoucherError,
 
-    /* Received a payment, which is less than requested */
-    ProviderEventPartialPaymentReceived,
+    /* All blocks of a requested Piece was sent */
+    EvBlocksCompleted,
 
-    /* Provider received payment and resumes a deal */
-    ProviderEventPaymentReceived,
-
-    /* Deal was completed */
-    ProviderEventCompleted
+    /* Deal completed */
+    EvCloseDeal
   };
 }  // namespace fc::markets::retrieval::provider
 
