@@ -14,41 +14,12 @@
 
 namespace fc::markets::retrieval {
   /**
-   * @enum Client deal FSM states
-   */
-  enum class ProviderStates {
-    /* Ready to handle client proposal */
-    DealNew,
-
-    /* Client proposal was received and handled */
-    DealProposalReceived,
-
-    /* Starting to send blocks */
-    DealAccepted,
-
-    /*  Proposal rejected / Piece not found */
-    DealRejected,
-
-    /* Network/internal error */
-    DealFailed,
-
-    /* Payment interval end was reached, need next payment */
-    DealPaymentNeeded,
-
-    /* Finalizing deal */
-    DealFinalizing,
-
-    /* Deal completed */
-    DealClosed
-  };
-
-  /**
    * @class Provider-side event handlers
    */
   class ProviderDeal {
    protected:
     using Transition =
-        fc::fsm::Transition<ProviderEvent, ProviderStates, ProviderDeal>;
+        fc::fsm::Transition<ProviderEvent, ProviderState, ProviderDeal>;
 
    public:
     /**
@@ -243,18 +214,18 @@ namespace fc::markets::retrieval {
     std::vector<Transtition> transitions_{
         /* EvHandleProposal : DealNew -> DealProposalReceived */
         Transition{ProviderEvent::EvHandleProposal}
-            .from(ProviderStates::DealNew)
-            .to(ProviderStates::DealProposalReceived)
+            .from(ProviderState::DealNew)
+            .to(ProviderState::DealProposalReceived)
             .action(ProviderDeal::proposalHandler),
         /* EvRejectDeal : DealProposalReceived -> DealRejected */
         Transition{ProviderEvent::EvRejectDeal}
-            .from(ProviderStates::DealProposalReceived)
-            .to(ProviderStates::DealRejected)
+            .from(ProviderState::DealProposalReceived)
+            .to(ProviderState::DealRejected)
             .action(ProviderDeal::rejectDealHandler),
         /* EvInternalError : Any -> DealFailed */
         Transition{ProviderEvent::EvInternalError}
             .fromAny()
-            .to(ProviderStates::DealFailed)
+            .to(ProviderState::DealFailed)
             .action(ProviderDeal::internalErrorHandler),
         /* EvNetworkError : DealRejected -> DealRejected,
          *                  DealAccepted -> DealFailed
@@ -262,8 +233,8 @@ namespace fc::markets::retrieval {
         Transition{ProviderEvent::EvNetworkError}
             .from(ProviderDeal::DealRejected)
             .toSameState()
-            .from(ProviderStates::DealAccepted)
-            .to(ProviderStates::DealFailed)
+            .from(ProviderState::DealAccepted)
+            .to(ProviderState::DealFailed)
             .action(ProviderDeal::networkErrorHandler),
         /* EvAcceptDeal : DealProposalReceived -> DealAccepted */
         Transition{ProviderEvent::EvAcceptDeal}
@@ -272,43 +243,43 @@ namespace fc::markets::retrieval {
             .action(ProviderDeal::acceptDealHandler),
         /* EvReadBlockError : DealAccepted -> DealFailed */
         Transition{ProviderEvent::EvReadBlockError}
-            .from(ProviderStates::DealAccepted)
-            .to(ProviderStates::DealFailed)
+            .from(ProviderState::DealAccepted)
+            .to(ProviderState::DealFailed)
             .action(ProviderDeal::readBlockErrorHandler),
         /* EvRequestPayment : DealAccepted -> DealPaymentNeeded */
         Transition{ProviderEvent::EvRequestPayment}
-            .from(ProviderStates::DealAccepted)
-            .to(ProviderStates::DealPaymentNeeded)
+            .from(ProviderState::DealAccepted)
+            .to(ProviderState::DealPaymentNeeded)
             .action(ProviderDeal::requestClientPaymentHandler),
         /* EvHandleClientPayment : DealPaymentNeeded -> DealPaymentNeeded */
         Transition{ProviderEvent::EvHandleClientPayment}
-            .from(ProviderStates::DealPaymentNeeded)
-            .to(ProviderStates::DealPaymentNeeded)
+            .from(ProviderState::DealPaymentNeeded)
+            .to(ProviderState::DealPaymentNeeded)
             .action(ProviderDeal::clientPaymentHandler),
         /* EvContinueDeal : DealPaymentNeeded -> DealAccepted */
         Transition{ProviderEvent::EvContinueDeal}
-            .from(ProviderStates::DealPaymentNeeded)
-            .to(ProviderStates::DealAccepted)
+            .from(ProviderState::DealPaymentNeeded)
+            .to(ProviderState::DealAccepted)
             .action(ProviderDeal::continueDealHandler)
         /* EvReadPaymentError : DealPaymentNeeded -> DealFailed */
         Transition{ProviderEvent::EvReadPaymentError}
-            .from(ProviderStates::DealPaymentNeeded)
-            .to(ProviderStates::DealFailed)
+            .from(ProviderState::DealPaymentNeeded)
+            .to(ProviderState::DealFailed)
             .action(ProviderDeal::readPaymentErrorHandler),
         /* EvSaveVoucherError : DealPaymentNeeded -> DealFailed */
         Transition{ProviderEvent::EvSaveVoucherError}
-            .from(ProviderStates::DealPaymentNeeded)
-            .to(ProviderStates::DealFailed)
+            .from(ProviderState::DealPaymentNeeded)
+            .to(ProviderState::DealFailed)
             .action(ProviderDeal::saveVoucherErrorHandler),
         /* EvBlocksCompleted : DealAccepted -> DealFinalizing */
         Transition{ProviderEvent::EvSaveVoucherError}
-            .from(ProviderStates::DealAccepted)
-            .to(ProviderStates::DealFinalizing)
+            .from(ProviderState::DealAccepted)
+            .to(ProviderState::DealFinalizing)
             .action(ProviderDeal::blocksCompletedHandler),
         /* EvCloseDeal : DealFinalizing -> DealClosed */
         Transition{ProviderEvent::EvCloseDeal}
-            .from(ProviderStates::DealFinalizing)
-            .to(ProviderStates::DealClosed)
+            .from(ProviderState::DealFinalizing)
+            .to(ProviderState::DealClosed)
             .action(ProviderDeal::closeDealHandler)};
   };
 

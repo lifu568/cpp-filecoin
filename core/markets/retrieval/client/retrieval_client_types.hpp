@@ -62,87 +62,110 @@ namespace fc::markets::retrieval::client {
   };
 
   /*
+   * @enum Client deal FSM states
+   */
+  enum class ClientState {
+    /* Ready to send a deal proposal to a provider */
+    DealNew,
+
+    /* Deal proposal to a provider was sent */
+    DealOpen,
+
+    /* Deal proposal was rejected by provider,
+     * or deal was early terminated by provider */
+    DealRejected,
+
+    /* Receiving blocks of the requested Piece in progress */
+    DealOngoing,
+
+    /* Occurred error during retrieval deal */
+    DealFailed,
+
+    /* Deal was successfully completed */
+    DealFinished,
+
+    /* Waiting payment channel creation result */
+    CreatingPaymentChannel,
+
+    /* Wating lane allocation result */
+    AllocatingLane,
+
+    /* Waiting adding funds result */
+    AddingFunds,
+
+    /* Waiting create voucher result */
+    CreatingVoucher
+  };
+
+  /*
    * @enum Client-side deal lifecycle events
    */
-  enum class ClientEvents : uint16_t {
-    /* Deal was initiated */
-    ClientEventOpen = 1,
+  enum class ClientEvent : uint16_t {
+    /* Send deal proposal to a provider */
+    EvSendProposal = 1,
 
-    /* Creating payment channel error */
-    ClientEventPaymentChannelErrored,
-
-    /* Creating lane in the payment channel error */
-    ClientEventAllocateLaneErrored,
-
-    /* Waiting for a message to create a payment channel */
-    ClientEventPaymentChannelCreateInitiated,
-
-    /* Newly created payment channel is ready to for the deal to resume */
-    ClientEventPaymentChannelReady,
-
-    /* Waiting for funds to be added to payment channel */
-    ClientEventPaymentChannelAddingFunds,
-
-    /* Failed to add funds to payment channel */
-    ClientEventPaymentChannelAddFundsErrored,
-
-    /* Send deal proposal network error */
-    ClientEventWriteDealProposalErrored,
-
-    /* Receive deal proposal response network error */
-    ClientEventReadDealResponseErrored,
-
-    /* Provider rejected deal */
-    ClientEventDealRejected,
-
-    /* Provider couldn't find a piece for a deal */
-    ClientEventDealNotFound,
+    /* Provider rejected a deal */
+    EvDealRejected,
 
     /* Provider accepted a deal */
-    ClientEventDealAccepted,
+    EvDealAccepted,
 
-    /* Received unknown deal proposal response from provider */
-    ClientEventUnknownResponseReceived,
+    /* Receiving blocks from a provider progress */
+    EvReceiveProgress,
 
-    /* Need to add more funds to a payment channel to continue a deal */
-    ClientEventFundsExpended,
+    /* Network error while attempting to execute any action */
+    EvNetworkError,
 
-    /* Provider asked for funds in a way that doesn't match the deal terms */
-    ClientEventBadPaymentRequested,
+    /* Provider completed the deal without sending all blocks */
+    EvEarlyTermination,
 
-    /* Failed to create payment voucher */
-    ClientEventCreateVoucherFailed,
+    /* Error during receiving block from a provider */
+    EvBlockConsumeFail,
 
-    /* Send payment voucher network error */
-    ClientEventWriteDealPaymentErrored,
+    /* Failed to verify received block */
+    EvBlockVerifyFail,
 
-    /* Payment voucher was sent to a provider */
-    ClientEventPaymentSent,
+    /* Failed to save received block */
+    EvBlockWriteFail,
 
-    /* Network error while reading block from provider */
-    ClientEventConsumeBlockFailed,
+    /* Received unknown resoponse from a provider */
+    EvUnknownResponse,
 
-    /* Provider requested last payment */
-    ClientEventLastPaymentRequested,
+    /* Provider asked to send next payment */
+    EvSendPayment,
 
-    /* Provider has sent all blocks */
-    ClientEventAllBlocksReceived,
+    /* Provider asked for funds in a way, which violating terms of the deal */
+    EvBadPaymentRequest,
 
-    /* Provider completed a deal without sending all blocks */
-    ClientEventEarlyTermination,
+    /* Failed to create payment channel */
+    EvCreatePaymentError,
 
-    /* Provider requested a next payment */
-    ClientEventPaymentRequested,
+    /* Allocate lane in a payment channel */
+    EvAllocateLane,
 
-    /* Received next data from a provider */
-    ClientEventProgress,
+    /* Failed to allocate lane in a payment channel */
+    EvAllocateLaneError,
 
-    /* Error occurred during a deal */
-    ClientEventError,
+    /* Add funds to a payment channel */
+    EvAddFunds,
 
-    /* Deal has been completed */
-    ClientEventComplete
+    /* Add funds to a payment channel error */
+    EvAddFundsError,
 
+    /* Create payment voucher */
+    EvCreateVoucher,
+
+    /* Create payment voucher error */
+    EvCreateVoucherError,
+
+    /* Error sending payment voucher to a provider */
+    EvWritePaymentError,
+
+    /* Payment voucher to a provider was successfully sent */
+    EvPaymentSent,
+
+    /* Retrieval deal successfully completed */
+    EvDealCompleted
   };
 }  // namespace fc::markets::retrieval::client
 

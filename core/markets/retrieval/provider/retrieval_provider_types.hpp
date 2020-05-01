@@ -38,6 +38,35 @@ namespace fc::markets::retrieval::provider {
   };
 
   /**
+   * @enum Provider deal FSM states
+   */
+  enum class ProviderState {
+    /* Ready to handle client proposal */
+    DealNew,
+
+    /* Client proposal was received and handled */
+    DealProposalReceived,
+
+    /* Starting to send blocks */
+    DealAccepted,
+
+    /*  Proposal rejected / Piece not found */
+    DealRejected,
+
+    /* Network/internal error */
+    DealFailed,
+
+    /* Payment interval end was reached, need next payment */
+    DealPaymentNeeded,
+
+    /* Finalizing deal */
+    DealFinalizing,
+
+    /* Deal completed */
+    DealClosed
+  };
+
+  /**
    * @enum Provider events
    */
   enum class ProviderEvent : uint64_t {
