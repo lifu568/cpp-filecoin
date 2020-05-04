@@ -1,0 +1,10 @@
+add_executable(provider_host
+    provider/provider_host.cpp
+    )
+target_link_libraries(provider_host
+    host_common_context
+    host_crypto_context
+    host_network_context
+    host_security_context
+    p2p::p2p_multiaddress
+    )
