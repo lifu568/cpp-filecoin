@@ -12,9 +12,9 @@ namespace fc::markets::retrieval::network {
     }
   }
 
-  outcome::result<void> NetworkClientImpl::connect(const PeerInfo &peer) {
+  outcome::result<void> NetworkClientImpl::connect(const PeerInfo &peer, const Protocol &proto) {
     operation_ = std::promise<void>();
-    this->openStream(peer);
+    this->openStream(peer, proto);
     auto future_connect = operation_.get_future();
     try {
       future_connect.get();
@@ -49,10 +49,10 @@ namespace fc::markets::retrieval::network {
     }
   }
 
-  void NetworkClientImpl::openStream(const PeerInfo &peer) {
+  void NetworkClientImpl::openStream(const PeerInfo &peer, const Protocol &proto) {
     host_service_->newStream(
         peer,
-        proto_,
+        proto,
         [this](outcome::result<std::shared_ptr<Stream>> stream_result) {
           if (stream_result.has_value()) {
             stream_ = std::move(stream_result.value());

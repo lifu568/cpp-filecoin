@@ -14,11 +14,13 @@ namespace fc::markets::retrieval::network {
   class NetworkClient {
    protected:
     using PeerInfo = libp2p::peer::PeerInfo;
+    using Protocol = libp2p::peer::Protocol;
 
    public:
     virtual ~NetworkClient() = default;
 
-    virtual outcome::result<void> connect(const PeerInfo &peer) = 0;
+    virtual outcome::result<void> connect(const PeerInfo &peer,
+                                          const Protocol &proto) = 0;
 
     virtual outcome::result<void> send(gsl::span<const uint8_t> request) = 0;
 

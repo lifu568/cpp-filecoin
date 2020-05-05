@@ -6,11 +6,13 @@
 #ifndef CPP_FILECOIN_CORE_MARKETS_RETRIEVAL_CLIENT_HPP
 #define CPP_FILECOIN_CORE_MARKETS_RETRIEVAL_CLIENT_HPP
 
-#include <functional>
+#include <vector>
 
+#include <libp2p/peer/peer_info.hpp>
 #include "common/outcome.hpp"
 #include "markets/retrieval/protocols/query_protocol.hpp"
 #include "markets/retrieval/protocols/retrieval_protocol.hpp"
+#include "markets/retrieval/client/retrieval_client_types.hpp"
 #include "primitives/address/address.hpp"
 #include "primitives/cid/cid.hpp"
 
@@ -19,6 +21,9 @@ namespace fc::markets::retrieval::client {
    * @class Retrieval market client
    */
   class RetrievalClient {
+   protected:
+    using PeerInfo = libp2p::peer::PeerInfo;
+
    public:
     /**
      * @brief Destructor
@@ -28,9 +33,9 @@ namespace fc::markets::retrieval::client {
     /**
      * @brief Find providers, which has requested Piece
      * @param piece_cid - identifier of the requested Piece
-     * @return Potential providers, sorted by priority to query
+     * @return Providers, which has requested piece
      */
-    virtual outcome::result<std::vector<RetrievalPeer>> findProviders(
+    virtual outcome::result<std::vector<PeerInfo>> findProviders(
         const CID &piece_cid) const = 0;
 
     /**
@@ -40,34 +45,30 @@ namespace fc::markets::retrieval::client {
      * @return Query response
      */
     virtual outcome::result<QueryResponse> query(
-        const RetrievalPeer &peer, const QueryRequest &request) const = 0;
+        const PeerInfo &peer, const QueryRequest &request) const = 0;
 
     /**
      * @brief Retrieve Piece from selected provider
      * @param piece_cid - identifier of the Piece to retrieve
-     * @param proposal_params - deal properties
-     * @param total_funds - total allocated funds
-     * @param retrieval_peer - provider to make a deal
-     * @param client_wallet - client address
-     * @param miner_wallet - miner payment address
+     * @param provider_peer - provider to make a deal
+     * @param deal_profile - deal properties
      * @return Identifier of the deal or error
      */
-    virtual outcome::result<DealID> retrieve(
+    virtual outcome::result<std::vector<Block>> retrieve(
         const CID &piece_cid,
-        const DealProposalParams &proposal_params,
-        TokenAmount total_funds,
-        const RetrievalPeer &retrieval_peer,
-        const Address &client_wallet,
-        const Address &miner_wallet) const = 0;
+        const PeerInfo &provider_peer,
+        const DealProfile &deal_profile) = 0;
+  };
 
-    /**
-     * @brief Subscribe on deal events
-     * @param handler - events receiver
-     */
-    virtual void subscribe(std::function<void>(DealID,
-                                               ClientEvent,
-                                               ClientDealState) handler) = 0;
+  /**
+   * @enum Retrieval client errors
+   */
+  enum class RetrievalClientError {
+    /* Failed to connect to a provider */
+    ProviderConnectionError
   };
 }  // namespace fc::markets::retrieval::client
+
+OUTCOME_HPP_DECLARE_ERROR(fc::markets::retrieval::client, RetrievalClientError);
 
 #endif

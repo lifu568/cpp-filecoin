@@ -19,26 +19,23 @@ namespace fc::markets::retrieval::network {
   class NetworkClientImpl : public NetworkClient {
    public:
     using HostService = libp2p::Host;
-    using Protocol = libp2p::peer::Protocol;
     using PeerInfo = libp2p::peer::PeerInfo;
     using Stream = libp2p::connection::Stream;
 
     NetworkClientImpl(std::shared_ptr<HostService> service,
-                      Protocol protocol,
                       const size_t buffer_size = 1024)
         : host_service_{std::move(service)},
           response_promise_{},
           stream_{},
-          buffer_(buffer_size),
-          proto_{std::move(protocol)} {}
+          buffer_(buffer_size) {}
 
     ~NetworkClientImpl();
 
-    outcome::result<void> connect(const PeerInfo &peer);
+    outcome::result<void> connect(const PeerInfo &peer, const Protocol &proto) override;
 
-    outcome::result<void> send(gsl::span<const uint8_t> request);
+    outcome::result<void> send(gsl::span<const uint8_t> request) override;
 
-    outcome::result<gsl::span<const uint8_t>> receive();
+    outcome::result<gsl::span<const uint8_t>> receive() override;
 
    private:
     std::shared_ptr<HostService> host_service_;
@@ -47,9 +44,8 @@ namespace fc::markets::retrieval::network {
     std::shared_ptr<Stream> stream_;
     std::vector<uint8_t> buffer_;
     size_t buffer_size_{};
-    Protocol proto_;
 
-    void openStream(const PeerInfo &peer);
+    void openStream(const PeerInfo &peer, const Protocol &proto);
 
     void sendRequest(gsl::span<const uint8_t> request);
 

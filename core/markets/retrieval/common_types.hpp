@@ -10,35 +10,16 @@
 #include "codec/cbor/streams_annotation.hpp"
 #include "common/buffer.hpp"
 #include "primitives/address/address.hpp"
+#include "storage/ipld/ipld_block.hpp"
 
 namespace fc::markets::retrieval {
   using common::Buffer;
   using libp2p::peer::PeerId;
   using primitives::address::Address;
+  using Block = storage::ipld::IPLDBlock;
 
   /* Retrieval deal identifier */
   using DealID = uint64_t;
-
-  /**
-   * @struct Everything needed to make a deal with a miner
-   */
-  struct RetrievalPeer {
-    Address address;
-    PeerId id;
-  };
-
-  /**
-   * @struct IPLD data block in the bitswap format
-   */
-  struct DataBlock {
-    /* Block prefix */
-    Buffer prefix;
-
-    /* Block raw bytes */
-    Buffer data;
-  };
-
-  CBOR_TUPLE(DataBlock, prefix, data);
 
   /**
    * @struct Payment info

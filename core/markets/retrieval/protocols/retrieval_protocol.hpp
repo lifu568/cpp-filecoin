@@ -21,7 +21,7 @@ namespace fc::markets::retrieval {
   using primitives::address::Address;
 
   /*
-   * @brief Query Protocol ID V0
+   * @brief Retrieval Protocol ID V0
    */
   const libp2p::peer::Protocol kRetrievalProtocolId = "/fil/retrieval/0.0.1";
 
@@ -77,7 +77,7 @@ namespace fc::markets::retrieval {
     std::string message;
 
     /* Requested data */
-    std::vector<DataBlock> blocks;
+    std::vector<Block> blocks;
   };
 
   CBOR_TUPLE(DealResponse, status, deal_id, payment_owed, message, blocks);
