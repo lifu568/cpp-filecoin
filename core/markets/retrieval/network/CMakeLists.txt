@@ -1,0 +1,9 @@
+add_library(retrieval_market_network
+    impl/network_client_impl.cpp
+    impl/network_server_impl.cpp
+    )
+target_link_libraries(retrieval_market_network
+    p2p::p2p_basic_host
+    outcome
+    buffer
+    )
