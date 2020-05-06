@@ -76,7 +76,7 @@ namespace fc::markets::retrieval {
     size_t item_size;
 
     /* Address to send tokens, may be different than miner address */
-    Address payment_address;
+    std::string payment_address;
 
     /* Min token amount per byte */
     TokenAmount min_price_per_byte;

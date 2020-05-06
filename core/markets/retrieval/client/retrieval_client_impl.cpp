@@ -17,7 +17,7 @@ namespace fc::markets::retrieval::client {
     OUTCOME_TRY(client.send(encoded_request));
     OUTCOME_TRY(encoded_response, client.receive());
     OUTCOME_TRY(response, codec::cbor::decode<QueryResponse>(encoded_response));
-    return response;
+    return std::move(response);
   }
 
   outcome::result<std::vector<Block>> RetrievalClientImpl::retrieve(
