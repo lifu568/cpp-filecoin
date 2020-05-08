@@ -11,7 +11,7 @@
 
 #include "markets/retrieval/network/impl/network_client_impl.hpp"
 #include "markets/retrieval/network/impl/network_server_impl.hpp"
-#include "markets/retrieval/network/network_server_logic.hpp"
+#include "markets/retrieval/network/server_logic.hpp"
 
 using fc::host::context::common::CommonContextImpl;
 using fc::host::context::crypto::CryptoContextImpl;

@@ -6,6 +6,7 @@
 #ifndef CPP_FILECOIN_CORE_MARKETS_RETRIEVAL_COMMON_TYPES_HPP
 #define CPP_FILECOIN_CORE_MARKETS_RETRIEVAL_COMMON_TYPES_HPP
 
+#include <libp2p/host/basic_host/basic_host.hpp>
 #include <libp2p/peer/peer_info.hpp>
 #include "codec/cbor/streams_annotation.hpp"
 #include "common/buffer.hpp"
@@ -17,8 +18,9 @@ namespace fc::markets::retrieval {
   using libp2p::peer::PeerId;
   using primitives::address::Address;
   using Block = storage::ipld::IPLDBlock;
-
-  /* Retrieval deal identifier */
+  using Protocol = libp2p::peer::Protocol;
+  using HostService = libp2p::Host;
+  using ConnectionId = uint64_t;
   using DealID = uint64_t;
 
   /**

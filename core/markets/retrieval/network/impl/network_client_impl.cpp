@@ -12,75 +12,65 @@ namespace fc::markets::retrieval::network {
     }
   }
 
-  outcome::result<void> NetworkClientImpl::connect(const PeerInfo &peer, const Protocol &proto) {
-    operation_ = std::promise<void>();
-    this->openStream(peer, proto);
-    auto future_connect = operation_.get_future();
-    try {
-      future_connect.get();
-      return outcome::success();
-    } catch (std::system_error &error) {
-      return static_cast<NetworkClientError>(error.code().value());
-    }
+  outcome::result<void> NetworkClientImpl::connect(const PeerInfo &peer,
+                                                   const Protocol &proto) {
+    return AsyncOperation::run([this, &peer, &proto](Operation operation) {
+      this->openStream(operation, peer, proto);
+    });
   }
 
   outcome::result<void> NetworkClientImpl::send(
       gsl::span<const uint8_t> request) {
-    operation_ = std::promise<void>();
-    this->sendRequest(request);
-    auto future_send = operation_.get_future();
-    try {
-      future_send.get();
-      return outcome::success();
-    } catch (std::system_error &error) {
-      return static_cast<NetworkClientError>(error.code().value());
-    }
+    return AsyncOperation::run([this, request](Operation operation) {
+      this->sendRequest(operation, request);
+    });
   }
 
   outcome::result<gsl::span<const uint8_t>> NetworkClientImpl::receive() {
-    operation_ = std::promise<void>();
-    this->receiveResponse();
-    auto future_receive = operation_.get_future();
-    try {
-      future_receive.get();
-      return gsl::make_span<const uint8_t>(buffer_.data(), buffer_size_);
-    } catch (std::system_error &error) {
-      return static_cast<NetworkClientError>(error.code().value());
-    }
+    auto result = AsyncOperation::run(
+        [this](Operation operation) { this->receiveResponse(operation); });
+    if (result.has_error()) return result.error();
+    return gsl::make_span<const uint8_t>(buffer_.data(), buffer_size_);
   }
 
-  void NetworkClientImpl::openStream(const PeerInfo &peer, const Protocol &proto) {
+  void NetworkClientImpl::openStream(Operation operation,
+                                     const PeerInfo &peer,
+                                     const Protocol &proto) {
     host_service_->newStream(
         peer,
         proto,
-        [this](outcome::result<std::shared_ptr<Stream>> stream_result) {
+        [this,
+         operation](outcome::result<std::shared_ptr<Stream>> stream_result) {
           if (stream_result.has_value()) {
             stream_ = std::move(stream_result.value());
-            operation_.set_value();
+            operation->set_value();
           } else {
-            failure(NetworkClientError::ConnectionError);
+            AsyncOperation::failure(operation,
+                                    NetworkClientError::ConnectionError);
           }
         });
   }
 
-  void NetworkClientImpl::sendRequest(gsl::span<const uint8_t> request) {
+  void NetworkClientImpl::sendRequest(Operation operation,
+                                      gsl::span<const uint8_t> request) {
     if (stream_ != nullptr) {
       stream_->writeSome(
           request,
           request.size(),
-          [this, request](outcome::result<size_t> sentResult) {
+          [operation, request](outcome::result<size_t> sentResult) {
             auto payload_size = static_cast<size_t>(request.size_bytes());
             if (sentResult.has_value() && payload_size == sentResult.value())
-              this->operation_.set_value();
+              operation->set_value();
             else
-              failure(NetworkClientError::SendRequestError);
+              AsyncOperation::failure(operation,
+                                      NetworkClientError::SendRequestError);
           });
     } else {
       failure(NetworkClientError::NetworkError);
     }
   }
 
-  void NetworkClientImpl::receiveResponse() {
+  void NetworkClientImpl::receiveResponse(Operation operation) {
     stream_->readSome(
         buffer_,
         buffer_.size(),

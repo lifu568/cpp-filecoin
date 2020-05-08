@@ -3,55 +3,54 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <thread>
+
 #include "markets/retrieval/network/impl/network_server_impl.hpp"
 
-#include <iostream>
-
 namespace fc::markets::retrieval::network {
-  void NetworkServerImpl::onNewStream(std::shared_ptr<Stream> stream) {
-    RemoteClientId client_id = last_client_id_++;
-    streams_[client_id] = std::move(stream);
-    handler_->onNewConnection(client_id);
-    readStream(client_id);
+  outcome::result<void> NetworkServerImpl::send(ConnectionId connection,
+                                                Buffer data) {
+    return AsyncOperation::run(
+        [this, connection, buffer{std::move(data)}](Operation operation) {
+          this->writeStream(operation, connection, buffer);
+        });
   }
 
-  void NetworkServerImpl::readStream(RemoteClientId client_id) {
-    streams_.at(client_id)->readSome(
-        buffer_,
-        buffer_.size(),
-        [this, client_id](outcome::result<size_t> length) {
+  void NetworkServerImpl::onNewStream(std::shared_ptr<Stream> stream) {
+    ConnectionId id = counter_++;
+    streams_[id] = std::move(stream);
+    handler_->onConnect(id);
+    readStream(id);
+  }
+
+  void NetworkServerImpl::readStream(ConnectionId id) {
+    streams_.at(id)->readSome(
+        buffer_, buffer_.size(), [this, id](outcome::result<size_t> length) {
           if (length.has_value()) {
-            ClientResponse action = handler_->onRequest(
-                client_id, buffer_.subbuffer(0, length.value()));
-            writeStream(client_id, std::move(action));
+            handler_->onRequest(id, buffer_.subbuffer(0, length.value()));
           } else {
-            handler_->onReceiveError(client_id);
-            closeStream(client_id);
+            handler_->onDisconnect(id);
+            closeStream(id);
           }
         });
   }
 
-  void NetworkServerImpl::writeStream(RemoteClientId client_id,
-                                      ClientResponse response) {
-    ConnectionStatus status = response.status;
-    if (!response.data.empty()) {
-      streams_.at(client_id)->writeSome(
-          response.data.toVector(),
-          response.data.size(),
-          [this, client_id, status](outcome::result<size_t> sent) {
-            if (sent.has_value()) {
-              if (status == ConnectionStatus::CLOSE)
-                closeStream(client_id);
-              else
-                readStream(client_id);
-            } else {
-              handler_->onSendResponseError(client_id);
-              closeStream(client_id);
-            }
-          });
-    } else {
-      if (response.status == ConnectionStatus::CLOSE) closeStream(client_id);
-    }
+  void NetworkServerImpl::writeStream(Operation operation,
+                                      ConnectionId id,
+                                      Buffer data) {
+    streams_.at(id)->writeSome(
+        data,
+        data.size(),
+        [this, id, data_size{data.size()}, operation](
+            outcome::result<size_t> sent) {
+          if (sent.has_value() && data_size == sent.value()) {
+            operation->set_value();
+          } else {
+            this->closeStream(id);
+            AsyncOperation::failure(operation,
+                                    NetworkServerError::SEND_RESPONSE_ERROR);
+          }
+        });
   }
 
   void NetworkServerImpl::closeStream(RemoteClientId client_id) {

@@ -9,7 +9,7 @@
 #include <functional>
 
 #include "common/outcome.hpp"
-#include "markets/retrieval/common_types.hpp"
+#include "markets/retrieval/types.hpp"
 
 namespace fc::markets::retrieval::provider {
     /**

@@ -12,6 +12,7 @@
 
 #include <libp2p/connection/stream.hpp>
 #include <libp2p/host/basic_host/basic_host.hpp>
+#include "markets/retrieval/network/async_operation.hpp"
 #include "markets/retrieval/network/network_client.hpp"
 
 namespace fc::markets::retrieval::network {
@@ -21,6 +22,8 @@ namespace fc::markets::retrieval::network {
     using HostService = libp2p::Host;
     using PeerInfo = libp2p::peer::PeerInfo;
     using Stream = libp2p::connection::Stream;
+    using AsyncOperation = AsyncOperation<NetworkClientError>;
+    using Operation = AsyncOperation::Operation;
 
     NetworkClientImpl(std::shared_ptr<HostService> service,
                       const size_t buffer_size = 1024)
@@ -31,7 +34,8 @@ namespace fc::markets::retrieval::network {
 
     ~NetworkClientImpl();
 
-    outcome::result<void> connect(const PeerInfo &peer, const Protocol &proto) override;
+    outcome::result<void> connect(const PeerInfo &peer,
+                                  const Protocol &proto) override;
 
     outcome::result<void> send(gsl::span<const uint8_t> request) override;
 
@@ -45,11 +49,13 @@ namespace fc::markets::retrieval::network {
     std::vector<uint8_t> buffer_;
     size_t buffer_size_{};
 
-    void openStream(const PeerInfo &peer, const Protocol &proto);
+    void openStream(Operation operation,
+                    const PeerInfo &peer,
+                    const Protocol &proto);
 
-    void sendRequest(gsl::span<const uint8_t> request);
+    void sendRequest(Operation operation, gsl::span<const uint8_t> request);
 
-    void receiveResponse();
+    void receiveResponse(Operation operation);
 
     void failure(NetworkClientError error);
   };

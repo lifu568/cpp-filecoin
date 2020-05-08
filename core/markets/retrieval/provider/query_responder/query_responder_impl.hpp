@@ -6,12 +6,12 @@
 #ifndef CPP_FILECOIN_MARKETS_RETRIEVAL_PROVIDER_QUERY_RESPONDER_IMPL_HPP
 #define CPP_FILECOIN_MARKETS_RETRIEVAL_PROVIDER_QUERY_RESPONDER_IMPL_HPP
 
-#include "markets/retrieval/network/network_server_logic.hpp"
+#include "markets/retrieval/network/server_logic.hpp"
 
 namespace fc::markets::retrieval::provider {
   class QueryResponderImpl : public network::NetworkServerLogic {
    public:
-      QueryResponderImpl()
+    QueryResponderImpl();
 
     void onNewConnection(RemoteClientId id) override;
 

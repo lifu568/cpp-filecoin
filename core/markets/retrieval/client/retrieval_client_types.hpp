@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "markets/retrieval/common_types.hpp"
+#include "markets/retrieval/types.hpp"
 #include "primitives/address/address.hpp"
 #include "primitives/cid/cid.hpp"
 #include "primitives/types.hpp"

@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "markets/retrieval/common_types.hpp"
+#include "markets/retrieval/types.hpp"
 #include "primitives/types.hpp"
 
 namespace fc::markets::retrieval::provider {
