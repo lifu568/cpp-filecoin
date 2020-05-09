@@ -25,8 +25,8 @@ namespace fc::markets::retrieval::network {
      * @param stream - connection stream
      * @param read_buffer - size of the read buffer
      */
-    NetworkStreamImpl(Stream stream, size_t read_buffer)
-        : stream_{std::move(stream)}, buffer_(read_buffer), buffer_size_{} {}
+    NetworkStreamImpl(Stream stream, size_t read_buffer = 1024)
+        : stream_{std::move(stream)}, buffer_(read_buffer, 0), buffer_size_{} {}
 
     outcome::result<gsl::span<const uint8_t>> read() override;
 

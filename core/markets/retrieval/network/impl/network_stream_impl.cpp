@@ -61,3 +61,17 @@ namespace fc::markets::retrieval::network {
   }
 
 }  // namespace fc::markets::retrieval::network
+
+OUTCOME_CPP_DEFINE_CATEGORY(fc::markets::retrieval::network,
+                            NetworkStreamError,
+                            e) {
+  using fc::markets::retrieval::network::NetworkStreamError;
+  switch (e) {
+    case NetworkStreamError::WRITE_ERROR:
+      return "Network stream write error";
+    case NetworkStreamError::READ_ERROR:
+      return "Network stream read error";
+    case NetworkStreamError::CLOSE_ERROR:
+      return "Network stream close error";
+  }
+}

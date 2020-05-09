@@ -9,10 +9,11 @@
 #include <functional>
 
 #include "common/outcome.hpp"
+#include "markets/retrieval/protocols/query_protocol.hpp"
 #include "markets/retrieval/types.hpp"
 
 namespace fc::markets::retrieval::provider {
-    /**
+  /**
    * @class Retrieval market provider
    */
   class RetrievalProvider {
@@ -46,8 +47,7 @@ namespace fc::markets::retrieval::provider {
      * @param payment_interval_increase - increase rate
      */
     virtual void setPaymentInterval(uint64_t payment_interval,
-                                    uint64_T payment_interval_increase) = 0;
-
+                                    uint64_t payment_interval_increase) = 0;
   };
 }  // namespace fc::markets::retrieval::provider
 

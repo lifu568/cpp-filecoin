@@ -2,6 +2,9 @@
  * Copyright Soramitsu Co., Ltd. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+#ifndef CPP_FILECOIN_MARKETS_RETRIEVAL_NETWORK_ASYNC_OPERATION_HPP
+#define CPP_FILECOIN_MARKETS_RETRIEVAL_NETWORK_ASYNC_OPERATION_HPP
+
 #include <functional>
 #include <future>
 
@@ -49,3 +52,5 @@ namespace fc::markets::retrieval::network {
     }
   };
 }  // namespace fc::markets::retrieval::network
+
+#endif

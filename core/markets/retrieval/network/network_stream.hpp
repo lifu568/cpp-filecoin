@@ -54,4 +54,6 @@ namespace fc::markets::retrieval::network {
   enum class NetworkStreamError { READ_ERROR, WRITE_ERROR, CLOSE_ERROR };
 }  // namespace fc::markets::retrieval::network
 
+OUTCOME_HPP_DECLARE_ERROR(fc::markets::retrieval::network, NetworkStreamError)
+
 #endif
