@@ -22,6 +22,8 @@ add_executable(retrieval_market_query_demo
 target_link_libraries(retrieval_market_query_demo
     retrieval_market_provider
     retrieval_market_client
+    piece_storage
+    in_memory_storage
     p2p::p2p
     p2p::p2p_literals
     )

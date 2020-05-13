@@ -8,13 +8,16 @@
 #include <libp2p/common/literals.hpp>
 #include <libp2p/injector/host_injector.hpp>
 #include <libp2p/security/plaintext.hpp>
-//#include "../test/testutil/literals.hpp"
 #include "host/context/crypto/crypto_context_impl.hpp"
 #include "markets/retrieval/client/retrieval_client_impl.hpp"
 #include "markets/retrieval/provider/retrieval_provider_impl.hpp"
+#include "storage/in_memory/in_memory_storage.hpp"
+#include "storage/piece/impl/piece_storage_impl.hpp"
 
 using fc::markets::retrieval::client::RetrievalClientImpl;
 using fc::markets::retrieval::provider::RetrievalProviderImpl;
+using fc::storage::InMemoryStorage;
+using fc::storage::piece::PieceStorageImpl;
 using libp2p::crypto::Key;
 using libp2p::crypto::KeyPair;
 using libp2p::crypto::PrivateKey;
@@ -29,7 +32,10 @@ using ClientShPtr =
     std::shared_ptr<fc::markets::retrieval::client::RetrievalClient>;
 using ContextShPtr = std::shared_ptr<boost::asio::io_context>;
 using HostShPtr = std::shared_ptr<libp2p::Host>;
+using PieceStorageShPtr = std::shared_ptr<fc::storage::piece::PieceStorage>;
+using StorageShPtr = std::shared_ptr<InMemoryStorage>;
 using fc::CID;
+using fc::common::getCidOf;
 using fc::markets::retrieval::QueryRequest;
 
 namespace demo {
@@ -64,6 +70,8 @@ struct Sandbox {
   ContextShPtr context;
   HostShPtr provider_host;
   HostShPtr client_host;
+  PieceStorageShPtr piece_storage;
+  StorageShPtr storage;
 
   Sandbox() {
     auto injector = libp2p::injector::makeHostInjector(
@@ -72,12 +80,15 @@ struct Sandbox {
     this->provider_host = injector.create<std::shared_ptr<libp2p::Host>>();
     this->client_host = injector.create<std::shared_ptr<libp2p::Host>>();
     this->context = injector.create<std::shared_ptr<boost::asio::io_context>>();
+    this->storage = std::make_shared<InMemoryStorage>();
+    this->piece_storage = std::make_shared<PieceStorageImpl>(this->storage);
     auto listen_address =
         libp2p::multi::Multiaddress::create(config::provider::multiaddress)
             .value();
     std::ignore = this->provider_host->listen(listen_address);
     this->provider_host->start();
-    provider = std::make_shared<RetrievalProviderImpl>(this->provider_host);
+    provider = std::make_shared<RetrievalProviderImpl>(this->provider_host,
+                                                       this->piece_storage);
     client = std::make_shared<RetrievalClientImpl>(this->provider_host);
   }
 };
@@ -85,11 +96,10 @@ struct Sandbox {
 int main() {
   Sandbox box;
   box.provider->start();
-  std::thread{[&box]() {
-    box.context->run();
-  }}.detach();
+  std::thread{[&box]() { box.context->run(); }}.detach();
   QueryRequest query_request{
-      .payload_cid = {fc::common::getCidOf(demo::payload_a).value()}};
+      .payload_cid = {getCidOf(demo::payload_a).value()},
+      .params = {.piece_cid = getCidOf(demo::payload_a).value()}};
   auto response =
       box.client->query(box.provider_host->getPeerInfo(), query_request);
   if (response.has_value()) {

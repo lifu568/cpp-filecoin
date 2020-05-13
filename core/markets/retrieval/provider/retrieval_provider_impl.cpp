@@ -25,8 +25,9 @@ namespace fc::markets::retrieval::provider {
       uint64_t payment_interval, uint64_t payment_interval_increase) {}
 
   void RetrievalProviderImpl::queryRequestHandler(NetworkStreamShPtr stream) {
-    std::thread([client_stream{std::move(stream)}]() {
-      auto responder = std::make_shared<QueryResponderImpl>(std::move(client_stream));
+    std::thread([this, client_stream{std::move(stream)}]() {
+      auto responder = std::make_shared<QueryResponderImpl>(
+          std::move(client_stream), piece_storage_);
       std::ignore = responder->run();
     }).detach();
   }

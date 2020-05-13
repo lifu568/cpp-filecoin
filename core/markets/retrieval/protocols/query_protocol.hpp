@@ -27,12 +27,22 @@ namespace fc::markets::retrieval {
    * @struct Request from client to provider
    *         to retrieve specified data by CID
    */
+  struct QueryParams {
+    /* Identifier of the parent's Piece */
+    CID piece_cid;
+  };
+
   struct QueryRequest {
     /* Identifier of the requested item */
     CID payload_cid;
+
+    /* Additional params */
+    QueryParams params;
   };
 
-  CBOR_TUPLE(QueryRequest, payload_cid);
+  CBOR_TUPLE(QueryParams, piece_cid)
+
+  CBOR_TUPLE(QueryRequest, payload_cid, params)
 
   /**
    * @enum Status of the query response
