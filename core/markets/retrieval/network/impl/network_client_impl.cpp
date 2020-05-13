@@ -26,9 +26,8 @@ namespace fc::markets::retrieval::network {
         proto,
         [operation, &network_stream](outcome::result<Stream> stream) {
           if (stream.has_value()) {
-            // stream_ = std::move(stream_result.value());
             network_stream =
-                std::make_shared<NetworkStreamImpl>(stream.value());
+                std::make_shared<NetworkStreamImpl>(std::move(stream.value()));
             operation->set_value();
           } else {
             AsyncOperation::failure(operation,

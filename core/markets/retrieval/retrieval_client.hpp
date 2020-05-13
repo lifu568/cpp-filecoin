@@ -10,9 +10,9 @@
 
 #include <libp2p/peer/peer_info.hpp>
 #include "common/outcome.hpp"
+#include "markets/retrieval/client/retrieval_client_types.hpp"
 #include "markets/retrieval/protocols/query_protocol.hpp"
 #include "markets/retrieval/protocols/retrieval_protocol.hpp"
-#include "markets/retrieval/client/retrieval_client_types.hpp"
 #include "primitives/address/address.hpp"
 #include "primitives/cid/cid.hpp"
 
@@ -22,7 +22,7 @@ namespace fc::markets::retrieval::client {
    */
   class RetrievalClient {
    protected:
-    using PeerInfo = libp2p::peer::PeerInfo;
+    using Peer = libp2p::peer::PeerInfo;
 
    public:
     /**
@@ -35,7 +35,7 @@ namespace fc::markets::retrieval::client {
      * @param piece_cid - identifier of the requested Piece
      * @return Providers, which has requested piece
      */
-    virtual outcome::result<std::vector<PeerInfo>> findProviders(
+    virtual outcome::result<std::vector<Peer>> findProviders(
         const CID &piece_cid) const = 0;
 
     /**
@@ -45,7 +45,7 @@ namespace fc::markets::retrieval::client {
      * @return Query response
      */
     virtual outcome::result<QueryResponse> query(
-        const PeerInfo &peer, const QueryRequest &request) const = 0;
+        const Peer &peer, const QueryRequest &request) = 0;
 
     /**
      * @brief Retrieve Piece from selected provider
@@ -56,17 +56,14 @@ namespace fc::markets::retrieval::client {
      */
     virtual outcome::result<std::vector<Block>> retrieve(
         const CID &piece_cid,
-        const PeerInfo &provider_peer,
+        const Peer &provider_peer,
         const DealProfile &deal_profile) = 0;
   };
 
   /**
    * @enum Retrieval client errors
    */
-  enum class RetrievalClientError {
-    /* Failed to connect to a provider */
-    ProviderConnectionError
-  };
+  enum class RetrievalClientError { NOT_IMPLEMENTED };
 }  // namespace fc::markets::retrieval::client
 
 OUTCOME_HPP_DECLARE_ERROR(fc::markets::retrieval::client, RetrievalClientError);

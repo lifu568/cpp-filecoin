@@ -9,14 +9,21 @@
 #include "markets/retrieval/protocols/query_protocol.hpp"
 
 namespace fc::markets::retrieval::client {
+  using PeerInfo = network::NetworkClient::PeerInfo;
+
+  outcome::result<std::vector<PeerInfo>> RetrievalClientImpl::findProviders(
+      const CID &piece_cid) const {
+    return outcome::failure(RetrievalClientError::NOT_IMPLEMENTED);
+  }
+
   outcome::result<QueryResponse> RetrievalClientImpl::query(
-      const PeerInfo &peer, const QueryRequest &request) const {
-    network::NetworkClientImpl client{host_service_};
-    OUTCOME_TRY(client.connect(peer, kQueryProtocolId));
+      const PeerInfo &peer, const QueryRequest &request) {
     OUTCOME_TRY(encoded_request, codec::cbor::encode(request));
-    OUTCOME_TRY(client.send(encoded_request));
-    OUTCOME_TRY(encoded_response, client.receive());
+    OUTCOME_TRY(stream, connect(peer, kQueryProtocolId));
+    OUTCOME_TRY(stream->write(encoded_request));
+    OUTCOME_TRY(encoded_response, stream->read());
     OUTCOME_TRY(response, codec::cbor::decode<QueryResponse>(encoded_response));
+    OUTCOME_TRY(stream->close());
     return std::move(response);
   }
 
@@ -27,3 +34,9 @@ namespace fc::markets::retrieval::client {
     return std::vector<Block>{};
   }
 }  // namespace fc::markets::retrieval::client
+
+OUTCOME_CPP_DEFINE_CATEGORY(fc::markets::retrieval::client,
+                            RetrievalClientError,
+                            e) {
+  return "NOT IMPLEMENTED";
+}

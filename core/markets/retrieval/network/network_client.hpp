@@ -14,12 +14,11 @@
 
 namespace fc::markets::retrieval::network {
   class NetworkClient {
-   protected:
+   public:
     using PeerInfo = libp2p::peer::PeerInfo;
     using Protocol = libp2p::peer::Protocol;
     using NetworkStreamShPtr = std::shared_ptr<NetworkStream>;
 
-   public:
     virtual ~NetworkClient() = default;
 
     virtual outcome::result<NetworkStreamShPtr> connect(

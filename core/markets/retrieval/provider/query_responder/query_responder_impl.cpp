@@ -4,13 +4,16 @@
  */
 
 #include "markets/retrieval/provider/query_responder/query_responder_impl.hpp"
-
-#include <iostream>
+#include "markets/retrieval/protocols/query_protocol.hpp"
+#include "codec/cbor/cbor.hpp"
 
 namespace fc::markets::retrieval::provider {
   outcome::result<void> QueryResponderImpl::run() {
     OUTCOME_TRY(request_bytes, stream_->read());
-    std::cout << "QueryResponder received request" << std::endl;
+    QueryResponse response{};
+    response.message = "It works! 4745";
+    OUTCOME_TRY(response_bytes, codec::cbor::encode(response));
+    OUTCOME_TRY(stream_->write(response_bytes));
     return outcome::success();
   }
 }  // namespace fc::markets::retrieval::provider

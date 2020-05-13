@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "markets/retrieval/provider/retrieval_provider_impl.hpp"
+#include <thread>
+
 #include "markets/retrieval/provider/query_responder/query_responder_impl.hpp"
+#include "markets/retrieval/provider/retrieval_provider_impl.hpp"
 
 namespace fc::markets::retrieval::provider {
   void RetrievalProviderImpl::start() {
@@ -23,8 +25,10 @@ namespace fc::markets::retrieval::provider {
       uint64_t payment_interval, uint64_t payment_interval_increase) {}
 
   void RetrievalProviderImpl::queryRequestHandler(NetworkStreamShPtr stream) {
-    auto responder = std::make_shared<QueryResponderImpl>(std::move(stream));
-    std::ignore = responder->run();
+    std::thread([client_stream{std::move(stream)}]() {
+      auto responder = std::make_shared<QueryResponderImpl>(std::move(client_stream));
+      std::ignore = responder->run();
+    }).detach();
   }
 
 }  // namespace fc::markets::retrieval::provider

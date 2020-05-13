@@ -9,10 +9,11 @@
 #include <memory>
 
 #include <libp2p/host/basic_host/basic_host.hpp>
+#include "markets/retrieval/network/impl/network_client_impl.hpp"
 #include "markets/retrieval/retrieval_client.hpp"
 
 namespace fc::markets::retrieval::client {
-  class RetrievalClientImpl : public RetrievalClient {
+class RetrievalClientImpl : public RetrievalClient, network::NetworkClientImpl {
    protected:
     using HostService = libp2p::Host;
 
@@ -22,10 +23,13 @@ namespace fc::markets::retrieval::client {
      * @param p2p_host - network backend
      */
     RetrievalClientImpl(std::shared_ptr<HostService> p2p_host)
-        : host_service_{std::move(p2p_host)} {}
+        : network::NetworkClientImpl{std::move(p2p_host)} {}
+
+    outcome::result<std::vector<PeerInfo>> findProviders(
+        const CID &piece_cid) const override;
 
     outcome::result<QueryResponse> query(
-        const PeerInfo &peer, const QueryRequest &request) const override;
+        const PeerInfo &peer, const QueryRequest &request) override;
 
     outcome::result<std::vector<Block>> retrieve(
         const CID &piece_cid,
