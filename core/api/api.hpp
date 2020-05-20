@@ -115,7 +115,7 @@ namespace fc::api {
       std::condition_variable c;
       Result r{outcome::success()};
       wait([&](auto v) {
-        r = v;
+        r = std::move(v);
         c.notify_one();
       });
       std::mutex m;

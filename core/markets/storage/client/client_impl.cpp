@@ -309,13 +309,13 @@ namespace fc::markets::storage::client {
     OUTCOME_TRY(chain_head, api_->ChainHead());
     OUTCOME_TRY(tipset_key, chain_head.makeKey());
     OUTCOME_TRY(
-        maybe_cid,
+        wait_cid,
         api_->MarketEnsureAvailable(
             deal->client_deal_proposal.proposal.client,
             deal->client_deal_proposal.proposal.client,
             deal->client_deal_proposal.proposal.clientBalanceRequirement(),
             tipset_key));
-    return std::move(maybe_cid);
+    return wait_cid.waitSync();
   }
 
   std::vector<ClientTransition> ClientImpl::makeFSMTransitions() {

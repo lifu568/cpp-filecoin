@@ -206,13 +206,13 @@ namespace fc::markets::storage::provider {
     OUTCOME_TRY(worker_info,
                 api_->StateMinerInfo(
                     deal->client_deal_proposal.proposal.provider, tipset_key));
-    OUTCOME_TRY(maybe_cid,
+    OUTCOME_TRY(wait_cid,
                 api_->MarketEnsureAvailable(
                     deal->client_deal_proposal.proposal.provider,
                     worker_info.worker,
                     deal->client_deal_proposal.proposal.provider_collateral,
                     tipset_key));
-    return std::move(maybe_cid);
+    return wait_cid.waitSync();
   }
 
   outcome::result<CID> StorageProviderImpl::publishDeal(
