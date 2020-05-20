@@ -41,6 +41,7 @@ namespace fc::api {
   using crypto::randomness::Randomness;
   using crypto::signature::Signature;
   using libp2p::peer::PeerInfo;
+  using markets::storage::DataRef;
   using markets::storage::SignedStorageAsk;
   using markets::storage::StorageDeal;
   using markets::storage::StorageProviderInfo;
@@ -131,6 +132,8 @@ namespace fc::api {
   template <typename T>
   struct is_wait<Wait<T>> : std::true_type {};
 
+  struct None {};
+
   struct InvocResult {
     UnsignedMessage message;
     MessageReceipt receipt;
@@ -195,6 +198,52 @@ namespace fc::api {
     IpldObject state;
   };
 
+  struct StartDealParams {
+    DataRef data;
+    Address wallet;
+    Address miner;
+    TokenAmount epoch_price;
+    uint64_t epochs;
+  };
+
+  struct MarketBalance {
+    TokenAmount escrow, locked;
+  };
+
+  struct QueryOffer {
+    std::string error;
+    CID root;
+    uint64_t size;
+    TokenAmount min_price;
+    uint64_t payment_interval;
+    uint64_t payment_interval_increase;
+    Address miner;
+    std::string peer;
+  };
+
+  struct FileRef {
+    std::string path;
+    bool car;
+  };
+
+  struct RetrievalOrder {
+    CID root;
+    uint64_t size;
+    TokenAmount total;
+    uint64_t interval;
+    uint64_t interval_inc;
+    Address client;
+    Address miner;
+    std::string peer;
+  };
+
+  struct Import {
+    int64_t status;
+    CID key;
+    std::string path;
+    uint64_t size;
+  };
+
   struct Api {
     API_METHOD(AuthNew, Buffer, const std::vector<std::string> &)
 
@@ -214,6 +263,20 @@ namespace fc::api {
     API_METHOD(ChainSetHead, void, const TipsetKey &)
     API_METHOD(ChainTipSetWeight, TipsetWeight, const TipsetKey &)
 
+    API_METHOD(ClientFindData, Wait<std::vector<QueryOffer>>, const CID &)
+    API_METHOD(ClientHasLocal, bool, const CID &)
+    API_METHOD(ClientImport, CID, const FileRef &)
+    API_METHOD(ClientListImports, std::vector<Import>)
+    API_METHOD(ClientQueryAsk,
+               Wait<SignedStorageAsk>,
+               const std::string &,
+               const Address &)
+    API_METHOD(ClientRetrieve,
+               Wait<None>,
+               const RetrievalOrder &,
+               const FileRef &)
+    API_METHOD(ClientStartDeal, Wait<CID>, const StartDealParams &)
+
     /**
      * Ensures that a storage market participant has a certain amount of
      * available funds. If additional funds are needed, they will be sent from
@@ -225,7 +288,7 @@ namespace fc::api {
      * @return CID of transfer message if message was sent
      */
     API_METHOD(MarketEnsureAvailable,
-               boost::optional<CID>,
+               Wait<boost::optional<CID>>,
                const Address &,
                const Address &,
                const TokenAmount &,
@@ -270,10 +333,11 @@ namespace fc::api {
                ChainEpoch)
     API_METHOD(StateGetActor, Actor, const Address &, const TipsetKey &)
     API_METHOD(StateReadState, ActorState, const Actor &, const TipsetKey &)
+    API_METHOD(StateGetReceipt, MessageReceipt, const CID &, const TipsetKey &)
     API_METHOD(StateListMiners, std::vector<Address>, const TipsetKey &)
     API_METHOD(StateListActors, std::vector<Address>, const TipsetKey &)
     API_METHOD(StateMarketBalance,
-               StorageParticipantBalance,
+               MarketBalance,
                const Address &,
                const TipsetKey &)
     API_METHOD(StateMarketDeals, MarketDealMap, const TipsetKey &)
@@ -312,6 +376,7 @@ namespace fc::api {
 
     API_METHOD(Version, VersionResult)
 
+    API_METHOD(WalletBalance, TokenAmount, const Address &)
     API_METHOD(WalletDefaultAddress, Address)
     API_METHOD(WalletHas, bool, const Address &)
     API_METHOD(WalletSign, Signature, const Address &, const Buffer &)

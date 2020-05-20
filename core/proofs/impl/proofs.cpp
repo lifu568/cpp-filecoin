@@ -839,7 +839,7 @@ namespace fc::proofs {
   }
 
   outcome::result<CID> Proofs::generateUnsealedCID(
-      RegisteredProof proof_type, gsl::span<PieceInfo> pieces) {
+      RegisteredProof proof_type, gsl::span<const PieceInfo> pieces) {
     OUTCOME_TRY(c_proof_type, cRegisteredSealProof(proof_type));
 
     OUTCOME_TRY(c_pieces, cPublicPieceInfos(pieces));

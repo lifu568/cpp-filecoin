@@ -150,6 +150,8 @@ TEST_F(RuntimeTest, send) {
       .WillOnce(testing::Return("010001020001"_cid));
   EXPECT_CALL(*state_tree_, get(Eq(to_address)))
       .WillRepeatedly(testing::Return(fc::outcome::success(to_actor)));
+  EXPECT_CALL(*state_tree_, set(Eq(to_address), _))
+      .WillRepeatedly(testing::Return(fc::outcome::success()));
   EXPECT_CALL(*invoker_, invoke(Eq(to_actor), _, Eq(method), Eq(params)))
       .WillOnce(testing::Return(fc::outcome::success(res)));
 

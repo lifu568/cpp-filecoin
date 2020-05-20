@@ -164,7 +164,7 @@ namespace fc::proofs {
      * the provided pieces.
      */
     static outcome::result<CID> generateUnsealedCID(
-        RegisteredProof proof_type, gsl::span<PieceInfo> pieces);
+        RegisteredProof proof_type, gsl::span<const PieceInfo> pieces);
 
     static outcome::result<ChallengeIndexes> generateWinningPoStSectorChallenge(
         RegisteredProof proof_type,
