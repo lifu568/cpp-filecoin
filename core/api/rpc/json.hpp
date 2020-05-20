@@ -227,6 +227,15 @@ namespace fc::api {
       v = std::move(cid);
     }
 
+    ENCODE(PeerId) {
+      return encode(v.toBase58());
+    }
+
+    DECODE(PeerId) {
+      OUTCOME_EXCEPT(id, PeerId::fromBase58(AsString(j)));
+      v = std::move(id);
+    }
+
     ENCODE(Ticket) {
       Value j{rapidjson::kObjectType};
       Set(j, "VRFProof", gsl::make_span(v.bytes));
@@ -1048,7 +1057,7 @@ namespace fc::api {
 
     template <typename T>
     static T decode(const Value &j) {
-      T v;
+      T v{codec::cbor::kDefaultT<T>()};
       decode(v, j);
       return v;
     }

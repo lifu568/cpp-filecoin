@@ -11,6 +11,7 @@
 #include <libp2p/peer/peer_info.hpp>
 
 #include "adt/channel.hpp"
+#include "common/libp2p/peer/cbor_peer_id.hpp"
 #include "crypto/randomness/randomness_types.hpp"
 #include "markets/storage/ask_protocol.hpp"
 #include "markets/storage/deal_protocol.hpp"
@@ -218,7 +219,7 @@ namespace fc::api {
     uint64_t payment_interval;
     uint64_t payment_interval_increase;
     Address miner;
-    std::string peer;
+    PeerId peer;
   };
 
   struct FileRef {
@@ -234,7 +235,7 @@ namespace fc::api {
     uint64_t interval_inc;
     Address client;
     Address miner;
-    std::string peer;
+    PeerId peer{codec::cbor::kDefaultT<PeerId>()};
   };
 
   struct Import {
